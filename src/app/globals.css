@@ -1,26 +1,78 @@
 @import "tailwindcss";
 
+/**
+ * ========================================================
+ * Harbor Steel 디자인 시스템 토큰 (globals.css)
+ * ========================================================
+ * shadcn/ui 기반의 'Harbor Steel' 팔레트:
+ * - Primary: #c59b4c (Harbor Gold)
+ * - Secondary: #e2e4e9 (Off-White / Cream Silver)
+ * - Accent: #2b3856 (Deep Slate Blue)
+ * - Muted: #1e2538 (Dark Slate)
+ * - Destructive: #f43f44 (Coral Red)
+ * - Border: #2e384d (Steel Border)
+ * - Card: #192030 (Steel Card Surface)
+ * - Background: #121622 (Deep Harbor Dark)
+ * - Radius: 0.75rem (12px)
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #121622;
+  --foreground: #e2e4e9;
+  --card: #192030;
+  --card-foreground: #e2e4e9;
+  --border: #2e384d;
+  --primary: #c59b4c;
+  --primary-hover: #d8ad5a;
+  --primary-foreground: #121622;
+  --secondary: #e2e4e9;
+  --secondary-foreground: #121622;
+  --accent: #2b3856;
+  --accent-foreground: #e2e4e9;
+  --muted: #1e2538;
+  --muted-foreground: #8e9ab0;
+  --destructive: #f43f44;
+  --radius: 0.75rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --radius-xl: var(--radius);
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  overflow-x: hidden;
+}
+
+/* 스크롤바 커스텀 (Harbor Steel 스타일) */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #121622;
+}
+::-webkit-scrollbar-thumb {
+  background: #2e384d;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c59b4c;
 }
