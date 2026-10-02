@@ -1,0 +1,75 @@
+rules_version = '2';
+
+/**
+ * ========================================================
+ * Firestore 보안 규칙 (firestore.rules)
+ * ========================================================
+ * 
+ * [보안 정책 개요]
+ * 1. 리더보드(scores) 컬렉션:
+ *    - 읽기 (read): 누구나 랭킹 순위표를 조회할 수 있습니다.
+ *    - 생성 (create): 로그인한 사용자만 본인의 UID 문서에 점수를 등록할 수 있습니다.
+ *    - 수정 (update): 본인만 수정 가능하며, 기존 최고 기록보다 높거나 같을 때만 갱신됩니다.
+ *    - 삭제 (delete): 보안상 일반 사용자의 기록 삭제는 차단합니다.
+ * 
+ * 2. 사용자 정보(users) 컬렉션:
+ *    - 회원가입 시 사용자 정보(UID, 이메일, 닉네임, 가입일시)를 안전하게 보관합니다.
+ *    - 개인정보 보호를 위해 본인 계정(request.auth.uid == userId)만 읽고 쓸 수 있습니다.
+ * 
+ * 3. 점수 위변조 방지 (isValidScore):
+ *    - 점수(score)는 0 이상의 정수(int)여야 합니다.
+ *    - 레벨(level)은 1 이상의 정수(int)여야 합니다.
+ *    - 닉네임(displayName)은 1자 이상 30자 이하의 문자열이어야 합니다.
+ *    - 문서 내의 userId가 실제 로그인한 계정의 UID와 정확히 일치해야 합니다.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 점수 데이터의 유효성을 검증하는 헬퍼 함수
+    function isValidScore(data) {
+      return data.keys().hasAll(['userId', 'displayName', 'score', 'level', 'updatedAt'])
+        && data.keys().hasOnly(['userId', 'displayName', 'score', 'level', 'updatedAt'])
+        && data.userId == request.auth.uid
+        && data.displayName is string
+        && data.displayName.size() > 0
+        && data.displayName.size() <= 30
+        && data.score is int
+        && data.score >= 0
+        && data.level is int
+        && data.level >= 1
+        && data.updatedAt is timestamp;
+    }
+
+    // 1. 리더보드 컬렉션 (문서 ID = 사용자 UID)
+    match /scores/{userId} {
+      // 누구나 리더보드 목록을 조회할 수 있음
+      allow read: if true;
+
+      // 최초 점수 등록: 본인 계정이고 데이터 유효성 통과 시 허용
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && isValidScore(request.resource.data);
+
+      // 점수 갱신: 본인 계정이고, 유효한 데이터이며, 이전 최고 점수 이상일 때만 허용
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && isValidScore(request.resource.data)
+                    && request.resource.data.score >= resource.data.score;
+
+      // 일반 사용자의 임의 삭제 차단
+      allow delete: if false;
+    }
+
+    // 2. 사용자 정보 컬렉션 (문서 ID = 사용자 UID)
+    match /users/{userId} {
+      // 본인의 정보만 읽고 쓸 수 있도록 엄격한 접근 제어 적용
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 그 외 모든 미정의 경로는 기본 차단
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
